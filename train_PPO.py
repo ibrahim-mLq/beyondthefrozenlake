@@ -34,7 +34,7 @@ model = PPO(
 
 call_back = make_report_logger(env_id=environment_id, out_dir="runs/ppo", run_tag=environment_id) #custom report logger
 
-model.learn(total_timesteps=2048, callback=call_back) #starts the actual training, and logs following call_back config
+model.learn(total_timesteps=102_400, callback=call_back) #starts the actual training, and logs following call_back config
 
 mean_return, std_return = evaluate_policy(model, env, n_eval_episodes=20, deterministic=True)
 print("eval return: ", mean_return, "+/-", std_return)
