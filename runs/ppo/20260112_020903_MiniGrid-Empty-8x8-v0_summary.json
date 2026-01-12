@@ -1,0 +1,23 @@
+{
+  "run_id": "20260112_020903_MiniGrid-Empty-8x8-v0",
+  "env_id": "MiniGrid-Empty-8x8-v0",
+  "algorithm": "PPO",
+  "policy": "ActorCriticCnnPolicy",
+  "device": "cuda",
+  "observation_space": "Box(0, 255, (3, 64, 64), uint8)",
+  "action_space": "Discrete(7)",
+  "hyperparams": {
+    "n_steps": 2048,
+    "batch_size": 64,
+    "n_epochs": 10,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "learning_rate": 0.0003,
+    "clip_range": 0.2,
+    "ent_coef": 0.0,
+    "vf_coef": 0.5,
+    "max_grad_norm": 0.5,
+    "seed": 0
+  },
+  "final": null
+}

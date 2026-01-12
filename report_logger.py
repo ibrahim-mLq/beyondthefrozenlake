@@ -3,16 +3,9 @@ from datetime import datetime
 from stable_baselines3.common.callbacks import BaseCallback
 
 
-# THIS IS AN AI GENERATED CUSTOM LOGGER!!!!!!!!!
-
-
-
 class ReportLoggerCallback(BaseCallback):
     """
     Logs only report-useful info:
-    - Run meta (algorithm, policy, env, seed, device, key hyperparams)
-    - Per-rollout summary (ep_rew_mean, ep_len_mean + core PPO train metrics if present)
-    Saves:
       - <out_dir>/<run_id>_summary.json
       - <out_dir>/<run_id>_rollouts.jsonl   (one line per rollout)
     """
@@ -21,27 +14,24 @@ class ReportLoggerCallback(BaseCallback):
         self.env_id = env_id
         self.out_dir = out_dir
         self.run_tag = run_tag
+
         self.run_id = None
         self.summary_path = None
-        self.rollout_idx = 0
         self.rollouts_path = None
+
         self.meta = {}
         self.rollout_count = 0
         self.t0 = None
 
-
     def _on_step(self) -> bool:
         return True
-
 
     def _safe_get(self, obj, name, default=None):
         return getattr(obj, name, default)
 
     def _get_logger_dict(self):
-        # SB3 stores the last dumped values here (names vary by version)
         logger = self.model.logger
         d = getattr(logger, "name_to_value", {}) or {}
-        # Convert numpy scalars to python
         out = {}
         for k, v in d.items():
             try:
@@ -70,7 +60,6 @@ class ReportLoggerCallback(BaseCallback):
         policy = self.model.policy.__class__.__name__
         device = str(self.model.device)
 
-        # hyperparams (only the ones that matter in a report)
         hp = {
             "n_steps": self._safe_get(self.model, "n_steps"),
             "batch_size": self._safe_get(self.model, "batch_size"),
@@ -96,63 +85,71 @@ class ReportLoggerCallback(BaseCallback):
             "hyperparams": hp,
         }
 
-        # write initial summary + clear rollouts file
         self._write_json(self.summary_path, {**self.meta, "final": None})
         open(self.rollouts_path, "w").close()
 
-        # clean console header
         print(f"[RUN] {self.meta['run_id']}")
         print(f" env: {self.meta['env_id']}")
         print(f" alg: {self.meta['algorithm']} | policy: {self.meta['policy']} | device: {self.meta['device']}")
         print(f" hp : n_steps={hp['n_steps']} batch={hp['batch_size']} epochs={hp['n_epochs']} lr={hp['learning_rate']} gamma={hp['gamma']} gae={hp['gae_lambda']} clip={hp['clip_range']}")
 
-def _on_rollout_end(self) -> None:
-    d = self._get_logger_dict()
+    def _on_rollout_end(self) -> None:
+        # --- core rollout step info ---
+        steps = int(getattr(self.model, "num_timesteps", 0))
 
-    keep = [
-        "time/total_timesteps",
-        "time/fps",
-        "rollout/ep_rew_mean",
-        "rollout/ep_len_mean",
-        "train/approx_kl",
-        "train/clip_fraction",
-        "train/entropy_loss",
-        "train/explained_variance",
-        "train/policy_gradient_loss",
-        "train/value_loss",
-        "train/loss",
-    ]
+        # --- episode stats (requires Monitor/VecMonitor) ---
+        rew_mean = None
+        len_mean = None
+        try:
+            buf = getattr(self.model, "ep_info_buffer", None)
+            if buf and len(buf) > 0:
+                ep_rews = [ep.get("r") for ep in buf if ep is not None]
+                ep_lens = [ep.get("l") for ep in buf if ep is not None]
+                ep_rews = [r for r in ep_rews if r is not None]
+                ep_lens = [l for l in ep_lens if l is not None]
+                if ep_rews:
+                    rew_mean = sum(ep_rews) / len(ep_rews)
+                if ep_lens:
+                    len_mean = sum(ep_lens) / len(ep_lens)
+        except Exception:
+            rew_mean, len_mean = None, None
 
-    # 1) build row FIRST
-    row = {k: d.get(k, None) for k in keep}
+        # --- training stats (may be empty depending on timing) ---
+        try:
+            d = self._get_logger_dict()
+        except Exception:
+            d = {}
 
-    # 2) set rollout index ONCE (use a single counter)
-    row["rollout_idx"] = int(self.rollout_count)
+        row = {
+            "rollout_idx": self.rollout_count + 1,
+            "time/total_timesteps": steps,
+            "rollout/ep_rew_mean": rew_mean,
+            "rollout/ep_len_mean": len_mean,
+            "train/approx_kl": d.get("train/approx_kl", None),
+            "train/clip_fraction": d.get("train/clip_fraction", None),
+            "train/entropy_loss": d.get("train/entropy_loss", None),
+            "train/explained_variance": d.get("train/explained_variance", None),
+            "train/policy_gradient_loss": d.get("train/policy_gradient_loss", None),
+            "train/value_loss": d.get("train/value_loss", None),
+            "train/loss": d.get("train/loss", None),
+            "time/fps": d.get("time/fps", None),
+        }
 
-    # 3) increment
-    self.rollout_count += 1
+        self.rollout_count += 1
+        self._append_jsonl(self.rollouts_path, row)
 
-    self._append_jsonl(self.rollouts_path, row)
+        def fmt(x, nd=3):
+            return "NA" if x is None else f"{x:.{nd}f}"
 
-    # ---- clean console line (safe if None) ----
-    steps = int(row.get("time/total_timesteps") or 0)
-
-    rew = row.get("rollout/ep_rew_mean")
-    rew_str = f"{float(rew):.3f}" if rew is not None else "NA"
-
-    ep_len = row.get("rollout/ep_len_mean")
-    len_str = f"{float(ep_len):.1f}" if ep_len is not None else "NA"
-
-    kl = row.get("train/approx_kl")
-    kl_str = f"{float(kl):.4f}" if kl is not None else "NA"
-
-    ev = row.get("train/explained_variance")
-    ev_str = f"{float(ev):.3f}" if ev is not None else "NA"
-
-    print(f"[{row['rollout_idx']:03d}] steps={steps} rew={rew_str} len={len_str} kl={kl_str} ev={ev_str}")
-
+        print(
+            f"[{row['rollout_idx']:03d}] "
+            f"steps={row['time/total_timesteps']} "
+            f"rew={fmt(row['rollout/ep_rew_mean'], 3)} "
+            f"len={fmt(row['rollout/ep_len_mean'], 1)} "
+            f"kl={fmt(row['train/approx_kl'], 4)} "
+            f"ev={fmt(row['train/explained_variance'], 3)}"
+        )
 
 
 def make_report_logger(env_id: str, out_dir: str = "runs", run_tag: str = None):
-    """Create the callback. Pass it into model.learn(callback=...)."""
     return ReportLoggerCallback(env_id=env_id, out_dir=out_dir, run_tag=run_tag, verbose=0)
