@@ -1,5 +1,6 @@
 import gymnasium as gym
 from stable_baselines3 import PPO
+from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.evaluation import evaluate_policy
 import minigrid
 from minigrid.wrappers import ImgObsWrapper, RGBImgObsWrapper
@@ -7,12 +8,13 @@ from report_logger import make_report_logger
 
 
 
-environment_id = "MiniGrid-Empty-8x8-v0"
-SEED = 0
+environment_id = "MiniGrid-DoorKey-16x16-v0"
+SEED = 1
 
 env = gym.make(environment_id, render_mode="rgb_array")
 env = RGBImgObsWrapper(env, tile_size=8)
 env = ImgObsWrapper(env)
+env = Monitor(env)
 
 obs, info = env.reset(seed=SEED)
 
@@ -32,9 +34,9 @@ model = PPO(
     seed=SEED,
 )
 
-call_back = make_report_logger(env_id=environment_id, out_dir="runs/ppo", run_tag=environment_id) #custom report logger
+call_back = make_report_logger(env_id=environment_id, out_dir="runs/ppo/MiniGrid-DoorKey-16x16-v0", run_tag=environment_id) #custom report logger
 
-model.learn(total_timesteps=102_400, callback=call_back) #starts the actual training, and logs following call_back config
+model.learn(total_timesteps=200_000, callback=call_back) #starts the actual training, and logs following call_back config
 
 mean_return, std_return = evaluate_policy(model, env, n_eval_episodes=20, deterministic=True)
 print("eval return: ", mean_return, "+/-", std_return)
