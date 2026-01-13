@@ -8,8 +8,8 @@ from report_logger import make_report_logger
 
 
 
-environment_id = "MiniGrid-DoorKey-16x16-v0"
-SEED = 1
+environment_id = "MiniGrid-DoorKey-5x5-v0"
+SEED = 2
 
 env = gym.make(environment_id, render_mode="rgb_array")
 env = RGBImgObsWrapper(env, tile_size=8)

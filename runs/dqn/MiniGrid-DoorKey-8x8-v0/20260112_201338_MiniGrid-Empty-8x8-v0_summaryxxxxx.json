@@ -1,0 +1,31 @@
+{
+  "run_id": "20260112_201338_MiniGrid-Empty-8x8-v0",
+  "env_id": "MiniGrid-Empty-8x8-v0",
+  "algorithm": "DQN",
+  "policy": "CnnPolicy",
+  "device": "cuda",
+  "observation_space": "Box(0, 255, (3, 64, 64), uint8)",
+  "action_space": "Discrete(7)",
+  "hyperparams": {
+    "buffer_size": 100000,
+    "learning_starts": 10000,
+    "batch_size": 64,
+    "gamma": 0.99,
+    "train_freq": "TrainFreq(frequency=4, unit=<TrainFrequencyUnit.STEP: 'step'>)",
+    "gradient_steps": 1,
+    "target_update_interval": 10000,
+    "exploration_fraction": 0.1,
+    "exploration_initial_eps": 1.0,
+    "exploration_final_eps": 0.05,
+    "learning_rate": 0.0001,
+    "seed": 1,
+    "log_every": 2048
+  },
+  "final": {
+    "time/total_timesteps": 200000,
+    "rollout/ep_rew_mean": 0.0,
+    "rollout/ep_len_mean": 256.0,
+    "train/loss": 1.4473711416940205e-05,
+    "train/exploration_rate": null
+  }
+}

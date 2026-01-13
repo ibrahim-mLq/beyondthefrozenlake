@@ -1,0 +1,33 @@
+{
+  "run_id": "20260113_030432_MiniGrid-Empty-8x8-v0",
+  "env_id": "MiniGrid-Empty-8x8-v0",
+  "algorithm": "RecurrentPPO",
+  "policy": "RecurrentActorCriticCnnPolicy",
+  "device": "cuda",
+  "observation_space": "Box(0, 255, (3, 64, 64), uint8)",
+  "action_space": "Discrete(7)",
+  "hyperparams": {
+    "n_steps": 2048,
+    "batch_size": 64,
+    "n_epochs": 10,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "learning_rate": 0.0003,
+    "clip_range": 0.2,
+    "ent_coef": 0.0,
+    "vf_coef": 0.5,
+    "max_grad_norm": 0.5,
+    "seed": 0
+  },
+  "final": {
+    "time/total_timesteps": 200704,
+    "rollout/ep_rew_mean": 0.9126718799999999,
+    "rollout/ep_len_mean": 24.84,
+    "train/approx_kl": 0.0371292345225811,
+    "train/clip_fraction": 0.28486328125,
+    "train/entropy_loss": -0.8854493632912636,
+    "train/explained_variance": 0.49992841482162476,
+    "train/value_loss": 0.005979356958778226,
+    "train/loss": -0.02589184232056141
+  }
+}

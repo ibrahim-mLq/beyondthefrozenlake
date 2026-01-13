@@ -1,0 +1,33 @@
+{
+  "run_id": "20260112_171121_MiniGrid-DoorKey-5x5-v0",
+  "env_id": "MiniGrid-DoorKey-5x5-v0",
+  "algorithm": "PPO",
+  "policy": "ActorCriticCnnPolicy",
+  "device": "cuda",
+  "observation_space": "Box(0, 255, (3, 40, 40), uint8)",
+  "action_space": "Discrete(7)",
+  "hyperparams": {
+    "n_steps": 2048,
+    "batch_size": 64,
+    "n_epochs": 10,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "learning_rate": 0.0003,
+    "clip_range": 0.2,
+    "ent_coef": 0.0,
+    "vf_coef": 0.5,
+    "max_grad_norm": 0.5,
+    "seed": 0
+  },
+  "final": {
+    "time/total_timesteps": 200704,
+    "rollout/ep_rew_mean": 0.9525880000000001,
+    "rollout/ep_len_mean": 13.17,
+    "train/approx_kl": 0.05131234973669052,
+    "train/clip_fraction": 0.319287109375,
+    "train/entropy_loss": -0.4977196265012026,
+    "train/explained_variance": 0.753404438495636,
+    "train/value_loss": 0.0008101106467620411,
+    "train/loss": -0.04088757932186127
+  }
+}
