@@ -6,8 +6,8 @@ import minigrid
 from minigrid.wrappers import ImgObsWrapper, RGBImgObsWrapper
 from report_logger import make_report_logger
 
-environment_id = "MiniGrid-Empty-16x16-v0"
-SEED = 1
+environment_id = "MiniGrid-DoorKey-5x5-v0"
+SEED = 2
 
 env = gym.make(environment_id, render_mode="rgb_array")
 env = RGBImgObsWrapper(env, tile_size=8)
@@ -34,11 +34,11 @@ model = RecurrentPPO(
 
 call_back = make_report_logger(
     env_id=environment_id,
-    out_dir="runs/rppo/MiniGrid-Empty-16x16-v0",
+    out_dir="runs/rppo/MiniGrid-Doorkey-5x5-v0",
     run_tag=environment_id,
 )
 
-model.learn(total_timesteps=200_000, callback=call_back)
+model.learn(total_timesteps=150_000, callback=call_back)
 
 mean_return, std_return = evaluate_policy(model, env, n_eval_episodes=20, deterministic=True)
 print("eval return:", mean_return, "+/-", std_return)
